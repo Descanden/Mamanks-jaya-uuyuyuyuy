@@ -1,0 +1,14 @@
+===== Nota Pemesanan =====
+Nama Pembeli: fff
+Jam Penayangan: 12:00
+Nama Film: Kimi No Nawa
+Kursi Terpilih: Kursi 1 Kursi 3 Kursi 4 ===== Nota Pemesanan =====
+Nama Pembeli: fff
+Jam Penayangan: 15:00
+Nama Film: Spiderman Home Coming
+Kursi Terpilih: Kursi 45 Kursi 47 
+===== Nota Pemesanan =====
+Nama Pembeli: Mamanks
+Jam Penayangan: 15:00
+Nama Film: Kimi No Nawa
+Kursi Terpilih: Kursi 4 Kursi 24 

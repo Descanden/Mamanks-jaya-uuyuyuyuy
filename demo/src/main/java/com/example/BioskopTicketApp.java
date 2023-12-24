@@ -11,6 +11,17 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import com.example.Others.Receipt;
+
+import java.io.FileWriter;
+import java.io.IOException;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
 public class BioskopTicketApp extends Application {
 
     private String pembeli;
@@ -134,20 +145,15 @@ public class BioskopTicketApp extends Application {
     }
 
     // Fungsi untuk menampilkan Nota
+
     private void showNota(Stage primaryStage) {
-        StringBuilder nota = new StringBuilder();
-        nota.append("===== Nota Pemesanan =====\n");
-        nota.append("Nama Pembeli: ").append(pembeli).append("\n");
-        nota.append("Jam Penayangan: ").append(jamPenayangan).append("\n");
-        nota.append("Nama Film: ").append(film).append("\n");
-        nota.append("Kursi Terpilih: ");
+        Receipt receipt = new Receipt(pembeli, jamPenayangan, film, kursiPilihanUser);
+        String notaText = receipt.generateReceipt();
 
-        // Cetak nomor kursi yang dipilih oleh pengguna
-        for (int kursi : kursiPilihanUser) {
-            nota.append("Kursi ").append(kursi).append(" ");
-        }
+        // Write receipt to a text file
+        writeReceiptToFile(notaText);
 
-        TextArea notaTextArea = new TextArea(nota.toString());
+        TextArea notaTextArea = new TextArea(notaText);
         notaTextArea.setEditable(false);
 
         // Tampilkan nota dalam dialog
@@ -163,6 +169,20 @@ public class BioskopTicketApp extends Application {
 
         // Kembali ke Scene utama
         start(primaryStage);
+    }
+
+    private void writeReceiptToFile(String notaText) {
+        try {
+            // If the file doesn't exist, create it
+            if (!Files.exists(Paths.get("receipt.txt"))) {
+                Files.createFile(Paths.get("receipt.txt"));
+            }
+    
+            // Append the new receipt content to the file
+            Files.write(Paths.get("receipt.txt"), notaText.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle the exception appropriately
+        }
     }
 
     // Fungsi untuk menghasilkan kursi terisi secara acak
@@ -205,4 +225,6 @@ public class BioskopTicketApp extends Application {
 
     public static void setRoot(String string) {
     }
+
+    
 }
