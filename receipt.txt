@@ -37,3 +37,8 @@ Nama Pembeli: ff
 Jam Penayangan: 12:00
 Nama Film: Spiderman Home Coming
 Kursi Terpilih: Kursi 64 Kursi 66 Kursi 68 Kursi 69 
+===== Nota Pemesanan =====
+Nama Pembeli: ff
+Jam Penayangan: 12:00
+Nama Film: Kimi No Nawa
+Kursi Terpilih: Kursi 46 
