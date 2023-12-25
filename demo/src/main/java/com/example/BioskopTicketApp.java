@@ -7,14 +7,20 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import com.example.Others.Film;
 import com.example.Others.Receipt;
 
 import java.io.FileWriter;
 import java.io.IOException;
+
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,13 +28,16 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
+import javafx.application.Platform;
+
 public class BioskopTicketApp extends Application {
 
     private String pembeli;
     private String jamPenayangan;
-    private String film;
+    private Film film;
     private Set<Integer> kursiRandomTerisi = new HashSet<>();
     private Set<Integer> kursiPilihanUser = new HashSet<>();
+
 
     public static void main(String[] args) {
         launch(args);
@@ -37,6 +46,12 @@ public class BioskopTicketApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Aplikasi Pemesanan Tiket Bioskop");
+
+        // Create a list of Film objects
+        List<Film> films = new ArrayList<>();
+        films.add(new Film("Kimi No Nawa", "/com/example/IMG/kimi_no_nawa_poster.jpg"));
+        films.add(new Film("Spiderman Home Coming", "/com/example/IMG/spi.jpg"));
+        films.add(new Film("Spirited Away", "/com/example/IMG/spirited_away_poster.jpg"));
 
         // Layout GridPane
         GridPane gridPane = new GridPane();
@@ -57,9 +72,8 @@ public class BioskopTicketApp extends Application {
         gridPane.add(new Label("Jam Penayangan:"), 0, 1);
         gridPane.add(jamPenayanganComboBox, 1, 1);
 
-        // Nama Film
-        ComboBox<String> filmComboBox = new ComboBox<>();
-        filmComboBox.getItems().addAll("Kimi No Nawa", "Spiderman Home Coming", "Spirited Away");
+        ComboBox<Film> filmComboBox = new ComboBox<>();
+        filmComboBox.getItems().addAll(films);
         filmComboBox.setPromptText("Pilih");
         gridPane.add(new Label("Nama Film:"), 0, 2);
         gridPane.add(filmComboBox, 1, 2);
@@ -80,7 +94,7 @@ public class BioskopTicketApp extends Application {
                 generateRandomSeats();
 
                 // Tampilkan Scene Pemilihan Kursi
-                showSeatSelection(primaryStage);
+                showSeatSelection(primaryStage, film); // Pass the selected film to the seat selection method
             } catch (InputValidationException e) {
                 // Tangkap pengecualian dan tampilkan pesan kesalahan menggunakan Alert
                 showAlert("Error", e.getMessage());
@@ -90,14 +104,16 @@ public class BioskopTicketApp extends Application {
         Scene scene = new Scene(gridPane, 300, 200);
         primaryStage.setScene(scene);
         primaryStage.show();
+
     }
 
-    // Fungsi untuk menampilkan Scene Pemilihan Kursi
-    private void showSeatSelection(Stage primaryStage) {
-        GridPane seatGridPane = new GridPane();
-        seatGridPane.setPadding(new Insets(20, 20, 20, 20));
-        seatGridPane.setVgap(10);
-        seatGridPane.setHgap(10);
+// Fungsi untuk menampilkan Scene Pemilihan Kursi
+private void showSeatSelection(Stage primaryStage, Film selectedFilm) {
+    GridPane seatGridPane = new GridPane();
+    seatGridPane.setPadding(new Insets(20, 20, 20, 20));
+    seatGridPane.setVgap(10);
+    seatGridPane.setHgap(10);;
+
 
         // Create CheckBox controls for each seat
         int rowCount = 0;
@@ -133,25 +149,42 @@ public class BioskopTicketApp extends Application {
             }
         }
 
-        // Tombol Pesan
-        Button pesanButton = new Button("Pesan");
-        seatGridPane.add(pesanButton, 10, rowCount + 1);
+    // Get the selected film's poster path
+    String posterPath = selectedFilm.getPosterPath();
+    Image moviePoster = new Image(getClass().getResource(posterPath).toExternalForm());
 
-        // Event Handler untuk Tombol Pesan
-        pesanButton.setOnAction(event -> showNota(primaryStage));
+    // ImageView for the movie poster
+    ImageView posterImageView = new ImageView(moviePoster);
+    posterImageView.setFitWidth(400); // Set the width of the poster
+    posterImageView.setFitHeight(200); // Set the height of the poster
+    posterImageView.setPreserveRatio(true);
 
-        Scene seatSelectionScene = new Scene(seatGridPane, 600, 400);
-        primaryStage.setScene(seatSelectionScene);
+    // Add the poster below the seat selection grid
+    seatGridPane.add(posterImageView, 0, rowCount + 2, 20, 1);
+
+ // Tombol Pesan
+ Button pesanButton = new Button("Pesan");
+ seatGridPane.add(pesanButton, 10, rowCount + 3);
+
+ // Event Handler untuk Tombol Pesan
+ pesanButton.setOnAction(event -> showNota(primaryStage));
+
+ Scene seatSelectionScene = new Scene(seatGridPane, 600, 600); // Adjusted height to accommodate the poster
+ primaryStage.setScene(seatSelectionScene);
     }
 
     // Fungsi untuk menampilkan Nota
 
     private void showNota(Stage primaryStage) {
-        Receipt receipt = new Receipt(pembeli, jamPenayangan, film, kursiPilihanUser);
-        String notaText = receipt.generateReceipt();
+    // Extract relevant information from the Film object
+    String filmTitle = film.getName(); // Use the getName() method
 
-        // Write receipt to a text file
-        writeReceiptToFile(notaText);
+    // Create the Receipt object
+    Receipt receipt = new Receipt(pembeli, jamPenayangan, filmTitle, kursiPilihanUser);
+    String notaText = receipt.generateReceipt();
+
+    // Write receipt to a text file
+    writeReceiptToFile(notaText);
 
         TextArea notaTextArea = new TextArea(notaText);
         notaTextArea.setEditable(false);
@@ -201,11 +234,12 @@ public class BioskopTicketApp extends Application {
     }
 
     // Fungsi untuk validasi input
-    private void validateInput(TextField pembeliField, ComboBox<String> jamPenayanganComboBox, ComboBox<String> filmComboBox) throws InputValidationException {
+    private void validateInput(TextField pembeliField, ComboBox<String> jamPenayanganComboBox, ComboBox<Film> filmComboBox) throws InputValidationException {
         if (pembeliField.getText().isEmpty() || jamPenayanganComboBox.getValue() == null || filmComboBox.getValue() == null) {
             throw new InputValidationException("Mohon lengkapi semua informasi sebelum melihat kursi tersedia.");
         }
     }
+
 
     // Exception untuk validasi input
     private static class InputValidationException extends Exception {

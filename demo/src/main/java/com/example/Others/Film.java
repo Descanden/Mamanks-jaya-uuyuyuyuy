@@ -16,5 +16,9 @@ public class Film {
     public String getPosterPath() {
         return posterPath;
     }
-}
 
+    @Override
+    public String toString() {
+        return name; // Override toString() to return the film name
+    }
+}

@@ -12,3 +12,18 @@ Nama Pembeli: Mamanks
 Jam Penayangan: 15:00
 Nama Film: Kimi No Nawa
 Kursi Terpilih: Kursi 4 Kursi 24 
+===== Nota Pemesanan =====
+Nama Pembeli: fff
+Jam Penayangan: 12:00
+Nama Film: Spirited Away
+Kursi Terpilih: Kursi 66 Kursi 67 
+===== Nota Pemesanan =====
+Nama Pembeli: fff
+Jam Penayangan: 12:00
+Nama Film: Spiderman Home Coming
+Kursi Terpilih: Kursi 1 Kursi 2 
+===== Nota Pemesanan =====
+Nama Pembeli: asda
+Jam Penayangan: 12:00
+Nama Film: Spiderman Home Coming
+Kursi Terpilih: 
