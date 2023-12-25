@@ -16,19 +16,16 @@ import java.util.Set;
 import com.example.Others.Film;
 import com.example.Others.Receipt;
 
-import java.io.FileWriter;
+
 import java.io.IOException;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-import javafx.application.Platform;
 
 public class BioskopTicketApp extends Application {
 
@@ -85,21 +82,21 @@ public class BioskopTicketApp extends Application {
         // Event Handler untuk Tombol Lihat Kursi Tersedia
         lihatKursiButton.setOnAction(event -> {
             try {
-                validateInput(pembeliField, jamPenayanganComboBox, filmComboBox); // Validasi bahwa semua input telah diisi
+                validateInput(pembeliField, jamPenayanganComboBox, filmComboBox);
                 pembeli = pembeliField.getText();
                 jamPenayangan = jamPenayanganComboBox.getValue();
                 film = filmComboBox.getValue();
-
+        
                 // Generate kursi terisi secara acak
                 generateRandomSeats();
-
+        
                 // Tampilkan Scene Pemilihan Kursi
-                showSeatSelection(primaryStage, film); // Pass the selected film to the seat selection method
+                showSeatSelection(primaryStage, film, jamPenayangan);
             } catch (InputValidationException e) {
-                // Tangkap pengecualian dan tampilkan pesan kesalahan menggunakan Alert
                 showAlert("Error", e.getMessage());
             }
         });
+        
 
         Scene scene = new Scene(gridPane, 300, 200);
         primaryStage.setScene(scene);
@@ -108,70 +105,77 @@ public class BioskopTicketApp extends Application {
     }
 
 // Fungsi untuk menampilkan Scene Pemilihan Kursi
-private void showSeatSelection(Stage primaryStage, Film selectedFilm) {
+private void showSeatSelection(Stage primaryStage, Film selectedFilm, String jamPenayangan) {
     GridPane seatGridPane = new GridPane();
     seatGridPane.setPadding(new Insets(20, 20, 20, 20));
     seatGridPane.setVgap(10);
-    seatGridPane.setHgap(10);;
+    seatGridPane.setHgap(10);
 
+    // Create CheckBox controls for each seat
+    int rowCount = 0;
+    int colCount = 0;
 
-        // Create CheckBox controls for each seat
-        int rowCount = 0;
-        int colCount = 0;
+    for (int i = 1; i <= 80; i++) {
+        CheckBox checkBox = new CheckBox("Kursi " + i);
 
-        for (int i = 1; i <= 80; i++) {
-            CheckBox checkBox = new CheckBox("Kursi " + i);
-
-            // Jika kursi terisi secara acak, set disable dan selected
-            if (kursiRandomTerisi.contains(i)) {
-                checkBox.setDisable(true);
-                checkBox.setSelected(true);
-            }
-
-            seatGridPane.add(checkBox, colCount, rowCount);
-
-            // Event Handler untuk pemilihan kursi
-            int kursiNumber = i;
-            checkBox.setOnAction(event -> {
-                if (!checkBox.isDisabled()) { // Kursi yang terisi secara acak tidak dapat dibatalkan
-                    if (checkBox.isSelected()) {
-                        kursiPilihanUser.add(kursiNumber);
-                    } else {
-                        kursiPilihanUser.remove(Integer.valueOf(kursiNumber));
-                    }
-                }
-            });
-
-            colCount++;
-            if (colCount == 20) {
-                colCount = 0;
-                rowCount++;
-            }
+        // Jika kursi terisi secara acak, set disable dan selected
+        if (kursiRandomTerisi.contains(i)) {
+            checkBox.setDisable(true);
+            checkBox.setSelected(true);
         }
 
-    // Get the selected film's poster path
-    String posterPath = selectedFilm.getPosterPath();
-    Image moviePoster = new Image(getClass().getResource(posterPath).toExternalForm());
+        seatGridPane.add(checkBox, colCount, rowCount);
 
-    // ImageView for the movie poster
-    ImageView posterImageView = new ImageView(moviePoster);
-    posterImageView.setFitWidth(400); // Set the width of the poster
-    posterImageView.setFitHeight(200); // Set the height of the poster
-    posterImageView.setPreserveRatio(true);
+        // Event Handler untuk pemilihan kursi
+        int kursiNumber = i;
+        checkBox.setOnAction(event -> {
+            if (!checkBox.isDisabled()) {
+                if (checkBox.isSelected()) {
+                    kursiPilihanUser.add(kursiNumber);
+                } else {
+                    kursiPilihanUser.remove(Integer.valueOf(kursiNumber));
+                }
+            }
+        });
 
-    // Add the poster below the seat selection grid
-    seatGridPane.add(posterImageView, 0, rowCount + 2, 20, 1);
-
- // Tombol Pesan
- Button pesanButton = new Button("Pesan");
- seatGridPane.add(pesanButton, 10, rowCount + 3);
-
- // Event Handler untuk Tombol Pesan
- pesanButton.setOnAction(event -> showNota(primaryStage));
-
- Scene seatSelectionScene = new Scene(seatGridPane, 600, 600); // Adjusted height to accommodate the poster
- primaryStage.setScene(seatSelectionScene);
+        colCount++;
+        if (colCount == 20) {
+            colCount = 0;
+            rowCount++;
+        }
     }
+
+// Get the selected film's poster path
+String posterPath = selectedFilm.getPosterPath();
+Image moviePoster = new Image(getClass().getResource(posterPath).toExternalForm());
+
+// ImageView for the movie poster
+ImageView posterImageView = new ImageView(moviePoster);
+posterImageView.setFitWidth(400); // Set the width of the poster
+posterImageView.setFitHeight(200); // Set the height of the poster
+posterImageView.setPreserveRatio(true);
+
+// Add the poster below the seat selection grid
+seatGridPane.add(posterImageView, 0, rowCount + 2, 20, 1);
+
+// Display Film Title
+Label filmTitleLabel = new Label("Film: " + selectedFilm.getName());
+seatGridPane.add(filmTitleLabel, 0, rowCount + 3, 20, 1);
+
+// Display Jam Penayangan
+Label jamPenayanganLabel = new Label("Jam Penayangan: " + jamPenayangan);
+seatGridPane.add(jamPenayanganLabel, 0, rowCount + 4, 20, 1);
+
+    // Tombol Pesan
+    Button pesanButton = new Button("Pesan");
+    seatGridPane.add(pesanButton, 10, rowCount + 5);
+
+    // Event Handler untuk Tombol Pesan
+    pesanButton.setOnAction(event -> showNota(primaryStage));
+
+    Scene seatSelectionScene = new Scene(seatGridPane, 600, 800); // Adjusted height to accommodate additional information
+    primaryStage.setScene(seatSelectionScene);
+}
 
     // Fungsi untuk menampilkan Nota
 
