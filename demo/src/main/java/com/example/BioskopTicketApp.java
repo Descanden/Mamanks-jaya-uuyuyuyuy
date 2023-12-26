@@ -17,6 +17,8 @@ import java.util.HashSet;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+import javafx.scene.image.ImageView;
+
 
 import com.example.Others.*;
 
@@ -152,24 +154,36 @@ public class BioskopTicketApp extends Application {
         seatGridPane.setPadding(new Insets(20, 20, 20, 20));
         seatGridPane.setVgap(10);
         seatGridPane.setHgap(10);
-
-        int rowCount = 0;
+    
+        // Add ImageView to display the movie poster
+        ImageView posterImageView = new ImageView(getClass().getResource(film.getPosterPath()).toExternalForm());
+        posterImageView.setFitWidth(300);
+        posterImageView.setFitHeight(400);
+        seatGridPane.add(posterImageView, 0, 0, 2, 1);
+    
+        // Add movie title and jam tayang labels
+        Label titleLabel = new Label("Movie: " + film.getName());
+        Label showtimeLabel = new Label("Jam Tayang: " + jamPenayangan);
+        seatGridPane.add(titleLabel, 0, 1, 2, 1);
+        seatGridPane.add(showtimeLabel, 0, 2, 2, 1);
+    
+        int rowCount = 3; // Start from the fourth row
         int colCount = 0;
-
+        
         for (int i = 1; i <= 80; i++) {
             CheckBox checkBox = new CheckBox(String.valueOf(i));
             checkBox.setPrefWidth(60);
             checkBox.setPadding(new Insets(5));
-
+        
             if (kursiRandomTerisi.contains(i)) {
                 checkBox.setDisable(true);
                 checkBox.setSelected(true);
             } else if (kursiPilihanUser.contains(i)) {
                 checkBox.setDisable(true);
             }
-
+        
             seatGridPane.add(checkBox, colCount, rowCount);
-
+        
             int kursiNumber = i;
             checkBox.setOnAction(event -> {
                 if (!checkBox.isDisabled()) {
@@ -185,27 +199,27 @@ public class BioskopTicketApp extends Application {
                     }
                 }
             });
-
+        
             colCount++;
             if (colCount == 10) {
                 colCount = 0;
                 rowCount++;
             }
         }
-
+    
         Button pesanButton = new Button("Pesan");
         GridPane.setMargin(pesanButton, new Insets(10, 0, 0, 0));
         seatGridPane.add(pesanButton, 5, rowCount + 1);
-
+    
         pesanButton.setOnAction(event -> {
             showNotaAndRecordPurchase();
             resetUI();
         });
     
-
-        Scene seatSelectionScene = new Scene(seatGridPane, 600, 400);
+        Scene seatSelectionScene = new Scene(seatGridPane, 600, 600);
         primaryStage.setScene(seatSelectionScene);
     }
+    
 
     private void showNotaAndRecordPurchase() {
         StringBuilder nota = new StringBuilder();
