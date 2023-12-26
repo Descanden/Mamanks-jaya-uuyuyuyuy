@@ -15,6 +15,22 @@ public class Receipt {
         this.kursiPilihanUser = kursiPilihanUser;
     }
 
+    public String getNama() {
+        return pembeli;
+    }
+
+    public String getJamPenayangan() {
+        return jamPenayangan;
+    }
+
+    public String getFilm() {
+        return film;
+    }
+
+    public Set<Integer> getKursiPilihanUser() {
+        return kursiPilihanUser;
+    }
+
     public String generateReceipt() {
         StringBuilder nota = new StringBuilder();
         nota.append("\n");
@@ -32,4 +48,3 @@ public class Receipt {
         return nota.toString();
     }
 }
-
