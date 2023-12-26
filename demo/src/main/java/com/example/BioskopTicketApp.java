@@ -3,10 +3,13 @@ package com.example;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -48,6 +51,7 @@ public class BioskopTicketApp extends Application {
         launch(args);
     }
 
+
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -63,6 +67,7 @@ public class BioskopTicketApp extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+
 
     private Tab createDataTab() {
         Tab dataTab = new Tab("Hasil Data");
@@ -97,7 +102,7 @@ public class BioskopTicketApp extends Application {
 
         return dataTab;
     }
-    
+
 
     private Tab createInputTab() {
         GridPane gridPane = new GridPane();
@@ -134,9 +139,9 @@ public class BioskopTicketApp extends Application {
                 pembeli = pembeliField.getText();
                 jamPenayangan = jamPenayanganComboBox.getValue();
                 film = filmComboBox.getValue();
-        
+
                 generateRandomSeats();
-        
+
                 showSeatSelection();
             } catch (InputValidationException e) {
                 showAlert("Error", e.getMessage());
@@ -150,40 +155,46 @@ public class BioskopTicketApp extends Application {
     }
 
     private void showSeatSelection() {
+        BorderPane borderPane = new BorderPane();
+        VBox movieInfoVBox = new VBox();
+        HBox posterAndCheckboxHBox = new HBox();
         seatGridPane = new GridPane();
         seatGridPane.setPadding(new Insets(20, 20, 20, 20));
         seatGridPane.setVgap(10);
         seatGridPane.setHgap(10);
-    
-        // Add ImageView to display the movie poster
+
+        // Add movie title and jam tayang labels above the poster
+        Label titleLabel = new Label("Movie: " + film.getName());
+        Label showtimeLabel = new Label("Jam Tayang: " + jamPenayangan);
+        movieInfoVBox.getChildren().addAll(titleLabel, showtimeLabel);
+
+        // Add movie info (title and showtime) above the poster
         ImageView posterImageView = new ImageView(getClass().getResource(film.getPosterPath()).toExternalForm());
         posterImageView.setFitWidth(300);
         posterImageView.setFitHeight(400);
-        seatGridPane.add(posterImageView, 0, 0, 2, 1);
-    
-        // Add movie title and jam tayang labels
-        Label titleLabel = new Label("Movie: " + film.getName());
-        Label showtimeLabel = new Label("Jam Tayang: " + jamPenayangan);
-        seatGridPane.add(titleLabel, 0, 1, 2, 1);
-        seatGridPane.add(showtimeLabel, 0, 2, 2, 1);
-    
-        int rowCount = 3; // Start from the fourth row
+
+        posterAndCheckboxHBox.getChildren().addAll(posterImageView, seatGridPane);
+        borderPane.setTop(movieInfoVBox);
+        borderPane.setCenter(posterAndCheckboxHBox);
+
+        // Create a sub-grid for checkboxes
+        int rowCount = 0;
         int colCount = 0;
-        
+
         for (int i = 1; i <= 80; i++) {
             CheckBox checkBox = new CheckBox(String.valueOf(i));
             checkBox.setPrefWidth(60);
             checkBox.setPadding(new Insets(5));
-        
+
             if (kursiRandomTerisi.contains(i)) {
                 checkBox.setDisable(true);
                 checkBox.setSelected(true);
             } else if (kursiPilihanUser.contains(i)) {
                 checkBox.setDisable(true);
             }
-        
+
             seatGridPane.add(checkBox, colCount, rowCount);
-        
+
             int kursiNumber = i;
             checkBox.setOnAction(event -> {
                 if (!checkBox.isDisabled()) {
@@ -199,27 +210,30 @@ public class BioskopTicketApp extends Application {
                     }
                 }
             });
-        
-            colCount++;
-            if (colCount == 10) {
-                colCount = 0;
-                rowCount++;
+
+            rowCount++;
+            if (rowCount == 10) {
+                rowCount = 0;
+                colCount++;
             }
         }
-    
+
+        // Create button for booking in the center
         Button pesanButton = new Button("Pesan");
-        GridPane.setMargin(pesanButton, new Insets(10, 0, 0, 0));
-        seatGridPane.add(pesanButton, 5, rowCount + 1);
-    
+        VBox centerVBox = new VBox(pesanButton);
+        centerVBox.setAlignment(Pos.CENTER);
+        borderPane.setBottom(centerVBox);
+
         pesanButton.setOnAction(event -> {
             showNotaAndRecordPurchase();
             resetUI();
         });
-    
-        Scene seatSelectionScene = new Scene(seatGridPane, 600, 600);
+
+        Scene seatSelectionScene = new Scene(borderPane, 900, 500); // Sesuaikan ukuran jika diperlukan
         primaryStage.setScene(seatSelectionScene);
     }
-    
+
+
 
     private void showNotaAndRecordPurchase() {
         StringBuilder nota = new StringBuilder();
