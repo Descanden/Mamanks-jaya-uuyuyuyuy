@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.HashSet;
 
@@ -40,6 +41,7 @@ public class BioskopTicketApp extends Application {
     private TableView<Receipt> tableView = new TableView<>();
     private Tab inputTab;
     private Label inputDetailsLabel = new Label();
+    private double totalAmount;
 
     // Declare UI components at the class level
     private TextField pembeliField;
@@ -244,13 +246,49 @@ public class BioskopTicketApp extends Application {
         borderPane.setBottom(centerVBox);
 
         pesanButton.setOnAction(event -> {
-            showNotaAndRecordPurchase();
-            resetUI();
+            if (kursiPilihanUser.isEmpty()) {
+                showAlert("Info", "Pilih kursi terlebih dahulu.");
+            } else {
+                // Calculate the total amount based on the number of seats selected
+                totalAmount = calculateTotalAmount(kursiPilihanUser.size());
+        
+                // Show the total amount to the user before entering the payment
+                showAlert("Total Amount", "Total amount to be paid: " + totalAmount);
+        
+                double amountPaid = promptForAmount();
+                if (amountPaid > 0) {
+                    boolean paymentSuccessful = PaymentManager.processPayment(kursiPilihanUser, amountPaid, totalAmount);
+                    if (paymentSuccessful) {
+                        showNotaAndRecordPurchase();
+                        resetUI();
+                    }
+                }
+            }
         });
+        
+        
 
         Scene seatSelectionScene = new Scene(borderPane, 900, 500); // Sesuaikan ukuran jika diperlukan
         primaryStage.setScene(seatSelectionScene);
     }
+
+    // Add a method to calculate the total amount based on the number of seats selected
+    private double calculateTotalAmount(int numberOfSeats) {
+        // Assuming the same seat price as in PaymentManager
+        return numberOfSeats * 25000.0;
+    }
+
+private double promptForAmount() {
+    TextInputDialog dialog = new TextInputDialog();
+    dialog.setTitle("Payment");
+    dialog.setHeaderText(null);
+    // Show the total amount in the content of the dialog
+    dialog.setContentText("Enter the amount paid (Total: " + totalAmount + "):");
+
+    Optional<String> result = dialog.showAndWait();
+    return result.map(Double::parseDouble).orElse(0.0);
+}
+
 
 
 
