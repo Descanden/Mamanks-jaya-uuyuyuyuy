@@ -98,9 +98,28 @@ public class BioskopTicketApp extends Application {
         Label inputDetailsLabel = new Label("Input Details:\n");
 
         vbox.getChildren().addAll(inputDetailsLabel, tableView);
+        Button deleteButton = new Button("Hapus Data");
+        vbox.getChildren().add(deleteButton);
+    
+        deleteButton.setOnAction(event -> {
+            // Handle the delete action here
+            deleteSelectedData();
+        });
+    
         dataTab.setContent(vbox);
-
+    
         return dataTab;
+    }
+
+    private void deleteSelectedData() {
+        Receipt selectedReceipt = tableView.getSelectionModel().getSelectedItem();
+        if (selectedReceipt != null) {
+            daftarPemesanan.remove(selectedReceipt);
+            tableView.setItems(FXCollections.observableArrayList(daftarPemesanan));
+            showAlert("Info", "Data berhasil dihapus.");
+        } else {
+            showAlert("Info", "Pilih data yang ingin dihapus.");
+        }
     }
 
 
