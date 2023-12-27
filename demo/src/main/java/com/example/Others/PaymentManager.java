@@ -1,13 +1,10 @@
 package com.example.Others;
 
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-
-import java.util.Optional;
 import java.util.Set;
 
 public class PaymentManager {
-    private static final int SEAT_PRICE = 25000;
+    public static final int SEAT_PRICE = 25000;
 
     public static boolean processPayment(Set<Integer> selectedSeats, double amountPaid, double totalAmount) {
         if (amountPaid >= totalAmount) {

@@ -275,7 +275,7 @@ public class BioskopTicketApp extends Application {
     // Add a method to calculate the total amount based on the number of seats selected
     private double calculateTotalAmount(int numberOfSeats) {
         // Assuming the same seat price as in PaymentManager
-        return numberOfSeats * 25000.0;
+        return numberOfSeats * PaymentManager.SEAT_PRICE;
     }
 
 private double promptForAmount() {
