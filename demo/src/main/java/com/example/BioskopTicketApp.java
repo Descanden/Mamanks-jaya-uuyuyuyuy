@@ -346,15 +346,7 @@ private double promptForAmount() {
 
     private void generateRandomSeats() {
         kursiRandomTerisi.clear();
-        kursiTerpesan.clear();
-    
-        Random random = new Random();
-        int jumlahKursiTerisi = (int) (80 * 0.75);
-    
-        for (int i = 0; i < jumlahKursiTerisi; i++) {
-            int kursiNumber = random.nextInt(80) + 1;
-            kursiRandomTerisi.add(kursiNumber);
-        }
+
     }
 
     private void showAlert(String title, String content) {
