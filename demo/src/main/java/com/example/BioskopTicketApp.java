@@ -282,6 +282,8 @@ public class BioskopTicketApp extends Application {
         centerVBox.setAlignment(Pos.CENTER);
         borderPane.setBottom(centerVBox);
 
+
+
         pesanButton.setOnAction(event -> {
             if (kursiPilihanUser.isEmpty()) {
                 showAlert("Info", "Pilih kursi terlebih dahulu.");
@@ -322,9 +324,16 @@ private double promptForAmount() {
     // Show the total amount in the content of the dialog
     dialog.setContentText("Enter the amount paid (Total: " + totalAmount + "):");
 
-    Optional<String> result = dialog.showAndWait();
-    return result.map(Double::parseDouble).orElse(0.0);
+    try {
+        Optional<String> result = dialog.showAndWait();
+        return result.map(Double::parseDouble).orElse(0.0);
+    } catch (NumberFormatException e) {
+        // Handle the case where the user enters a non-numeric value
+        showAlert("Error", "Invalid input. Please enter a numeric value for the payment amount.");
+        return promptForAmount(); // Recursive call to prompt the user again
+    }
 }
+
 
 
 
