@@ -46,6 +46,7 @@ public class BioskopTicketApp extends Application {
     private double totalAmount;
     private Set<Integer> kursiTerpesan = new HashSet<>();
     private Map<String, Set<Integer>> reservedSeatsByShowtime = new HashMap<>();
+    
 
     // Declare UI components at the class level
     private TextField pembeliField;
@@ -205,6 +206,7 @@ public class BioskopTicketApp extends Application {
         // Create a sub-grid for checkboxes
         int rowCount = 0;
         int colCount = 0;
+        String movieShowtimeKey = film.getName() + "_" + jamPenayangan;
 
         for (int i = 1; i <= 80; i++) {
             CheckBox checkBox = new CheckBox(String.valueOf(i));
@@ -212,7 +214,7 @@ public class BioskopTicketApp extends Application {
             checkBox.setPadding(new Insets(5));
     
             // Check if the seat is already reserved for the current showtime and movie
-            if (reservedSeatsByShowtime.containsKey(jamPenayangan) && reservedSeatsByShowtime.get(jamPenayangan).contains(i)) {
+            if (reservedSeatsByShowtime.containsKey(movieShowtimeKey) && reservedSeatsByShowtime.get(movieShowtimeKey).contains(i)) {
                 checkBox.setDisable(true);
             }
     
@@ -240,6 +242,7 @@ public class BioskopTicketApp extends Application {
                 colCount++;
             }
         }
+    
     
 
         // Create button for booking in the center
@@ -310,7 +313,10 @@ private double promptForAmount() {
             nota.delete(nota.length() - 2, nota.length());
         }
 
-        reservedSeatsByShowtime.computeIfAbsent(jamPenayangan, k -> new HashSet<>())
+        String movieShowtimeKey = film.getName() + "_" + jamPenayangan;
+
+
+        reservedSeatsByShowtime.computeIfAbsent(movieShowtimeKey, k -> new HashSet<>())
         .addAll(kursiPilihanUser);
 
         showNotaAndRecordPurchase(nota.toString());
@@ -371,7 +377,7 @@ private double promptForAmount() {
         pembeliField.clear();
         jamPenayanganComboBox.getSelectionModel().clearSelection();
         filmComboBox.getSelectionModel().clearSelection();
-
+    
         for (Node node : seatGridPane.getChildren()) {
             if (node instanceof CheckBox) {
                 CheckBox checkBox = (CheckBox) node;
@@ -379,9 +385,16 @@ private double promptForAmount() {
                 checkBox.setDisable(false);
             }
         }
-
-        reservedSeatsByShowtime.remove(jamPenayangan);
+    
+        // Check if the film object is not null before using it
+        if (film != null && jamPenayangan != null) {
+            String movieShowtimeKey = film.getName() + "_" + jamPenayangan;
+    
+            // Clear the reserved seats for the current showtime and movie
+            reservedSeatsByShowtime.remove(movieShowtimeKey);
+        }
     }
+    
 
     public static void setRoot(String string) {
     }
