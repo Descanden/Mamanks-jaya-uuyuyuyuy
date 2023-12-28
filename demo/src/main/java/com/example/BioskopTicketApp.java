@@ -81,41 +81,73 @@ public class BioskopTicketApp extends Application {
         VBox vbox = new VBox();
         vbox.setSpacing(10);
         vbox.setPadding(new Insets(20));
-
+    
         TableColumn<Receipt, String> namaCol = new TableColumn<>("Nama");
         namaCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNama()));
-
+    
         TableColumn<Receipt, String> jamPenayanganCol = new TableColumn<>("Jam Penayangan");
         jamPenayanganCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getJamPenayangan()));
-
+    
         TableColumn<Receipt, String> filmCol = new TableColumn<>("Film");
         filmCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFilm()));
-
+    
         TableColumn<Receipt, String> kursiCol = new TableColumn<>("Kursi Terpilih");
         kursiCol.setCellValueFactory(cellData -> {
-            Set<Integer> kursiPilihanUser = cellData.getValue().getKursiPilihanUser(); // Use the correct method
+            Set<Integer> kursiPilihanUser = cellData.getValue().getKursiPilihanUser();
             return new SimpleStringProperty(kursiPilihanUser.stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(", ")));
         });
-
+    
         tableView.getColumns().addAll(namaCol, jamPenayanganCol, filmCol, kursiCol);
         tableView.setItems(FXCollections.observableArrayList(daftarPemesanan));
-
+    
         Label inputDetailsLabel = new Label("Input Details:\n");
-
+    
         vbox.getChildren().addAll(inputDetailsLabel, tableView);
+        HBox buttonsHBox = new HBox();
+        buttonsHBox.setSpacing(10);
+    
         Button deleteButton = new Button("Hapus Data");
-        vbox.getChildren().add(deleteButton);
+        Button updateButton = new Button("Update Data");
+    
+        buttonsHBox.getChildren().addAll(deleteButton, updateButton);
+        vbox.getChildren().add(buttonsHBox);
     
         deleteButton.setOnAction(event -> {
             // Handle the delete action here
             deleteSelectedData();
         });
     
+        updateButton.setOnAction(event -> {
+            // Handle the update action here
+            updateSelectedData();
+        });
+    
         dataTab.setContent(vbox);
     
         return dataTab;
+    }
+
+    private void updateSelectedData() {
+        Receipt selectedReceipt = tableView.getSelectionModel().getSelectedItem();
+        if (selectedReceipt != null) {
+            // Implement the logic to update the data (e.g., buyer name and seat)
+            TextInputDialog dialog = new TextInputDialog(selectedReceipt.getNama());
+            dialog.setTitle("Update Buyer Name");
+            dialog.setHeaderText(null);
+            dialog.setContentText("Enter the updated buyer name:");
+    
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(updatedName -> {
+                selectedReceipt.setNama(updatedName);
+                showAlert("Info", "Data berhasil diupdate.");
+            });
+    
+            tableView.refresh();
+        } else {
+            showAlert("Info", "Pilih data yang ingin diupdate.");
+        }
     }
 
     private void deleteSelectedData() {

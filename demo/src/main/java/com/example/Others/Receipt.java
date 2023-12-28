@@ -48,4 +48,8 @@ public class Receipt {
 
         return nota.toString();
     }
+
+    public void setNama(String updatedName) {
+        this.pembeli = updatedName;
+    }
 }
