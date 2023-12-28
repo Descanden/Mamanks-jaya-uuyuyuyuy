@@ -1,5 +1,6 @@
 package com.example.Others;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class Receipt {
@@ -12,7 +13,7 @@ public class Receipt {
         this.pembeli = pembeli;
         this.jamPenayangan = jamPenayangan;
         this.film = film;
-        this.kursiPilihanUser = kursiPilihanUser;
+        this.kursiPilihanUser = new HashSet<>(kursiPilihanUser); // Create a new set
     }
 
     public String getNama() {

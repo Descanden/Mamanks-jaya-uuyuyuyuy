@@ -42,6 +42,7 @@ public class BioskopTicketApp extends Application {
     private Tab inputTab;
     private Label inputDetailsLabel = new Label();
     private double totalAmount;
+    private Set<Integer> kursiTerpesan = new HashSet<>();
 
     // Declare UI components at the class level
     private TextField pembeliField;
@@ -206,16 +207,17 @@ public class BioskopTicketApp extends Application {
             CheckBox checkBox = new CheckBox(String.valueOf(i));
             checkBox.setPrefWidth(60);
             checkBox.setPadding(new Insets(5));
-
+        
             if (kursiRandomTerisi.contains(i)) {
                 checkBox.setDisable(true);
-                checkBox.setSelected(true);
+            } else if (kursiTerpesan.contains(i)) {
+                checkBox.setDisable(true);
             } else if (kursiPilihanUser.contains(i)) {
                 checkBox.setDisable(true);
             }
-
+        
             seatGridPane.add(checkBox, colCount, rowCount);
-
+        
             int kursiNumber = i;
             checkBox.setOnAction(event -> {
                 if (!checkBox.isDisabled()) {
@@ -231,7 +233,7 @@ public class BioskopTicketApp extends Application {
                     }
                 }
             });
-
+        
             rowCount++;
             if (rowCount == 10) {
                 rowCount = 0;
@@ -301,7 +303,7 @@ private double promptForAmount() {
         nota.append("Kursi Terpilih: ");
 
         for (int kursi : kursiPilihanUser) {
-            nota.append("Kursi ").append(kursi).append(", ");
+            kursiTerpesan.add(kursi);
         }
         if (!kursiPilihanUser.isEmpty()) {
             nota.delete(nota.length() - 2, nota.length());
@@ -344,9 +346,11 @@ private double promptForAmount() {
 
     private void generateRandomSeats() {
         kursiRandomTerisi.clear();
+        kursiTerpesan.clear();
+    
         Random random = new Random();
         int jumlahKursiTerisi = (int) (80 * 0.75);
-
+    
         for (int i = 0; i < jumlahKursiTerisi; i++) {
             int kursiNumber = random.nextInt(80) + 1;
             kursiRandomTerisi.add(kursiNumber);
