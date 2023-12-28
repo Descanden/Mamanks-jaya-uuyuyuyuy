@@ -52,4 +52,6 @@ public class Receipt {
     public void setNama(String updatedName) {
         this.pembeli = updatedName;
     }
+
+    
 }

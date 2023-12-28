@@ -19,17 +19,17 @@ public class PaymentManager {
 
     private static void showPaymentSuccessDialog(double totalAmount, double change) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Payment Successful");
+        alert.setTitle("Pembayaran Berhasil");
         alert.setHeaderText(null);
-        alert.setContentText("Payment successful!\nTotal Amount: " + totalAmount + "\nChange: " + change);
+        alert.setContentText("Pembayaran berhasil!\nTotal harga: " + totalAmount + "\nKembalian: " + change);
         alert.showAndWait();
     }
 
     private static void showPaymentFailureDialog(double totalAmount, double amountPaid) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Payment Failed");
+        alert.setTitle("Pembayaran Gagal");
         alert.setHeaderText(null);
-        alert.setContentText("Payment failed. Insufficient amount.\nAmount Due: " + (totalAmount - amountPaid));
+        alert.setContentText("Pembayaran gagal tidak cukup dana.\nDana kurang: " + (totalAmount - amountPaid));
         alert.showAndWait();
     }
 }

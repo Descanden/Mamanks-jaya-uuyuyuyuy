@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.HashSet;
 
 import java.util.Set;
@@ -58,7 +57,7 @@ public class BioskopTicketApp extends Application {
         launch(args);
     }
 
-
+    //ini main scene 
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -75,14 +74,14 @@ public class BioskopTicketApp extends Application {
         primaryStage.show();
     }
 
-
+    //tab data
     private Tab createDataTab() {
         Tab dataTab = new Tab("Hasil Data");
         VBox vbox = new VBox();
         vbox.setSpacing(10);
         vbox.setPadding(new Insets(20));
     
-        TableColumn<Receipt, String> namaCol = new TableColumn<>("Nama");
+        TableColumn<Receipt, String> namaCol = new TableColumn<>("Nama"); //pembuatan instance namacol yang polymorp dari class receipt dan display bentuk string
         namaCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNama()));
     
         TableColumn<Receipt, String> jamPenayanganCol = new TableColumn<>("Jam Penayangan");
@@ -240,7 +239,7 @@ public class BioskopTicketApp extends Application {
         int colCount = 0;
         String movieShowtimeKey = film.getName() + "_" + jamPenayangan;
 
-        for (int i = 1; i <= 80; i++) {
+        for (int i = 1; i <= 40; i++) {
             CheckBox checkBox = new CheckBox(String.valueOf(i));
             checkBox.setPrefWidth(60);
             checkBox.setPadding(new Insets(5));

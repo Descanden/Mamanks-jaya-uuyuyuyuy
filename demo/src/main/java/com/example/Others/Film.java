@@ -1,5 +1,6 @@
 package com.example.Others;
 
+//getter setter untuk poster dan nama film
 public class Film {
     private String name;
     private String posterPath;
