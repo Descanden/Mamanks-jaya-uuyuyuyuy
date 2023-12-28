@@ -14,7 +14,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.HashSet;
@@ -43,6 +45,7 @@ public class BioskopTicketApp extends Application {
     private Label inputDetailsLabel = new Label();
     private double totalAmount;
     private Set<Integer> kursiTerpesan = new HashSet<>();
+    private Map<String, Set<Integer>> reservedSeatsByShowtime = new HashMap<>();
 
     // Declare UI components at the class level
     private TextField pembeliField;
@@ -207,17 +210,14 @@ public class BioskopTicketApp extends Application {
             CheckBox checkBox = new CheckBox(String.valueOf(i));
             checkBox.setPrefWidth(60);
             checkBox.setPadding(new Insets(5));
-        
-            if (kursiRandomTerisi.contains(i)) {
-                checkBox.setDisable(true);
-            } else if (kursiTerpesan.contains(i)) {
-                checkBox.setDisable(true);
-            } else if (kursiPilihanUser.contains(i)) {
+    
+            // Check if the seat is already reserved for the current showtime and movie
+            if (reservedSeatsByShowtime.containsKey(jamPenayangan) && reservedSeatsByShowtime.get(jamPenayangan).contains(i)) {
                 checkBox.setDisable(true);
             }
-        
+    
             seatGridPane.add(checkBox, colCount, rowCount);
-        
+    
             int kursiNumber = i;
             checkBox.setOnAction(event -> {
                 if (!checkBox.isDisabled()) {
@@ -233,13 +233,14 @@ public class BioskopTicketApp extends Application {
                     }
                 }
             });
-        
+    
             rowCount++;
             if (rowCount == 10) {
                 rowCount = 0;
                 colCount++;
             }
         }
+    
 
         // Create button for booking in the center
         Button pesanButton = new Button("Pesan");
@@ -309,6 +310,9 @@ private double promptForAmount() {
             nota.delete(nota.length() - 2, nota.length());
         }
 
+        reservedSeatsByShowtime.computeIfAbsent(jamPenayangan, k -> new HashSet<>())
+        .addAll(kursiPilihanUser);
+
         showNotaAndRecordPurchase(nota.toString());
     }
 
@@ -375,6 +379,8 @@ private double promptForAmount() {
                 checkBox.setDisable(false);
             }
         }
+
+        reservedSeatsByShowtime.remove(jamPenayangan);
     }
 
     public static void setRoot(String string) {
