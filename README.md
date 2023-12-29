@@ -1,6 +1,9 @@
-
 README Aplikasi Pemesanan Tiket Bioskop
-Penulis: Elang Dwi Setiawan Diqlas
+
+UI
+1. Register
+2. Booking
+3. Details Pemesanan
 
 Deskripsi
 Aplikasi ini adalah sistem pemesanan tiket bioskop sederhana yang memungkinkan pengguna untuk pesan tiket, memilih kursi, film, dan jam penayangan. Aplikasi ini dibangun menggunakan JavaFX dan menyediakan UI pengguna yang intuitif.
