@@ -53,5 +53,7 @@ public class Receipt {
         this.pembeli = updatedName;
     }
 
-    
+    public void setJamP(String newShowtime) {
+        this.jamPenayangan = newShowtime;
+    }
 }

@@ -1,3 +1,6 @@
+/**
+ * @Author Elang Dwi Setiawan Diqlas
+ */
 package com.example;
 
 import javafx.application.Application;
@@ -12,7 +15,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +38,9 @@ import com.example.Others.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Node;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 public class BioskopTicketApp extends Application {
 
     private Stage primaryStage;
@@ -37,15 +48,13 @@ public class BioskopTicketApp extends Application {
     private String jamPenayangan;
     private Film film;
     private List<Receipt> daftarPemesanan = new ArrayList<>();
-    private Set<Integer> kursiRandomTerisi = new HashSet<>();
     private Set<Integer> kursiPilihanUser = new HashSet<>();
     private TableView<Receipt> tableView = new TableView<>();
     private Tab inputTab;
     private Label inputDetailsLabel = new Label();
     private double totalAmount;
-    private Set<Integer> kursiTerpesan = new HashSet<>();
     private Map<String, Set<Integer>> reservedSeatsByShowtime = new HashMap<>();
-    
+
 
     // Declare UI components at the class level
     private TextField pembeliField;
@@ -57,7 +66,7 @@ public class BioskopTicketApp extends Application {
         launch(args);
     }
 
-    //ini main scene 
+    //ini main scene
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -77,86 +86,146 @@ public class BioskopTicketApp extends Application {
     //tab data
     private Tab createDataTab() {
         Tab dataTab = new Tab("Hasil Data");
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         VBox vbox = new VBox();
         vbox.setSpacing(10);
         vbox.setPadding(new Insets(20));
-    
+
         TableColumn<Receipt, String> namaCol = new TableColumn<>("Nama"); //pembuatan instance namacol yang polymorp dari class receipt dan display bentuk string
         namaCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNama()));
-    
+
         TableColumn<Receipt, String> jamPenayanganCol = new TableColumn<>("Jam Penayangan");
         jamPenayanganCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getJamPenayangan()));
-    
+
         TableColumn<Receipt, String> filmCol = new TableColumn<>("Film");
         filmCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFilm()));
-    
+
         TableColumn<Receipt, String> kursiCol = new TableColumn<>("Kursi Terpilih");
         kursiCol.setCellValueFactory(cellData -> {
             Set<Integer> kursiPilihanUser = cellData.getValue().getKursiPilihanUser();
-            return new SimpleStringProperty(kursiPilihanUser.stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(", ")));
+            return new SimpleStringProperty(kursiPilihanUser.stream().map(String::valueOf).collect(Collectors.joining(", ")));
         });
-    
+
         tableView.getColumns().addAll(namaCol, jamPenayanganCol, filmCol, kursiCol);
         tableView.setItems(FXCollections.observableArrayList(daftarPemesanan));
-    
+
         Label inputDetailsLabel = new Label("Input Details:\n");
-    
+
         vbox.getChildren().addAll(inputDetailsLabel, tableView);
         HBox buttonsHBox = new HBox();
         buttonsHBox.setSpacing(10);
-    
+
         Button deleteButton = new Button("Hapus Data");
         Button updateButton = new Button("Update Data");
-    
+
         buttonsHBox.getChildren().addAll(deleteButton, updateButton);
         vbox.getChildren().add(buttonsHBox);
-    
+
         deleteButton.setOnAction(event -> {
             // Handle the delete action here
             deleteSelectedData();
         });
-    
+
         updateButton.setOnAction(event -> {
             // Handle the update action here
             updateSelectedData();
         });
-    
+
         dataTab.setContent(vbox);
-    
+
         return dataTab;
     }
 
     private void updateSelectedData() {
         Receipt selectedReceipt = tableView.getSelectionModel().getSelectedItem();
         if (selectedReceipt != null) {
-            // Implement the logic to update the data (e.g., buyer name and seat)
-            TextInputDialog dialog = new TextInputDialog(selectedReceipt.getNama());
-            dialog.setTitle("Update Buyer Name");
+            Dialog<Pair<String, String>> dialog = new Dialog<>();
+            dialog.setTitle("Update Data");
             dialog.setHeaderText(null);
-            dialog.setContentText("Enter the updated buyer name:");
-    
-            Optional<String> result = dialog.showAndWait();
-            result.ifPresent(updatedName -> {
-                selectedReceipt.setNama(updatedName);
-                showAlert("Info", "Data berhasil diupdate.");
+
+            // Membuat label dan field untuk nama
+            Label nameLabel = new Label("Update Buyer Name:");
+            TextField nameField = new TextField(selectedReceipt.getNama());
+
+            // Membuat label dan choice box untuk reschedule jam penayangan
+            Label showtimeLabel = new Label("Reschedule Showtime:");
+            ChoiceBox<String> showtimeChoiceBox = new ChoiceBox<>(FXCollections.observableArrayList("12:00", "15:00", "18:00", "21:00"));
+            showtimeChoiceBox.getSelectionModel().select(selectedReceipt.getJamPenayangan());
+
+            // Membuat layout grid untuk dialog
+            GridPane grid = new GridPane();
+            grid.add(nameLabel, 0, 0);
+            grid.add(nameField, 1, 0);
+            grid.add(showtimeLabel, 0, 1);
+            grid.add(showtimeChoiceBox, 1, 1);
+
+            dialog.getDialogPane().setContent(grid);
+
+            ButtonType updateButtonType = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(updateButtonType, ButtonType.CANCEL);
+
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == updateButtonType) {
+                    String newName = nameField.getText();
+                    String newShowtime = showtimeChoiceBox.getValue(); // Ensure getting selected time correctly
+
+                    return new Pair<>(newName, newShowtime);
+                }
+                return null;
             });
-    
-            tableView.refresh();
+
+            Optional<Pair<String, String>> result = dialog.showAndWait();
+
+            result.ifPresent(pair -> {
+                selectedReceipt.setNama(pair.getKey());
+                selectedReceipt.setJamP(pair.getValue());
+                tableView.refresh();
+                showAlert("Info", "Data updated successfully.");
+
+                // Update data pada file TXT
+                savePemesananToFile(daftarPemesanan);
+            });
         } else {
-            showAlert("Info", "Pilih data yang ingin diupdate.");
+            showAlert("Info", "Select the data you want to update.");
         }
     }
 
+    /**
+     * Method penghapusan data
+     *
+     */
     private void deleteSelectedData() {
         Receipt selectedReceipt = tableView.getSelectionModel().getSelectedItem();
         if (selectedReceipt != null) {
             daftarPemesanan.remove(selectedReceipt);
             tableView.setItems(FXCollections.observableArrayList(daftarPemesanan));
             showAlert("Info", "Data berhasil dihapus.");
+
+            // Update data pada file TXT
+            savePemesananToFile(daftarPemesanan);
         } else {
             showAlert("Info", "Pilih data yang ingin dihapus.");
+        }
+    }
+
+    /**
+     *
+     * @param daftarPemesanan
+     */
+    private void savePemesananToFile(List<Receipt> daftarPemesanan) {
+        Path filePath = Paths.get("demo\\src\\main\\java\\com\\example\\Makalah\\data_pemesanan.txt");
+
+        try (BufferedWriter writer = Files.newBufferedWriter(filePath, StandardCharsets.UTF_8)) {
+            // Menulis data pemesanan ke dalam file
+            for (Receipt receipt : daftarPemesanan) {
+                writer.write(receipt.generateReceipt());
+                writer.newLine();
+            }
+
+            System.out.println("Data pemesanan berhasil disimpan ke dalam file.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Error", "Gagal menyimpan data ke dalam file.");
         }
     }
 
@@ -197,7 +266,7 @@ public class BioskopTicketApp extends Application {
                 jamPenayangan = jamPenayanganComboBox.getValue();
                 film = filmComboBox.getValue();
 
-                generateRandomSeats();
+
 
                 showSeatSelection();
             } catch (InputValidationException e) {
@@ -243,14 +312,14 @@ public class BioskopTicketApp extends Application {
             CheckBox checkBox = new CheckBox(String.valueOf(i));
             checkBox.setPrefWidth(60);
             checkBox.setPadding(new Insets(5));
-    
+
             // Check if the seat is already reserved for the current showtime and movie
             if (reservedSeatsByShowtime.containsKey(movieShowtimeKey) && reservedSeatsByShowtime.get(movieShowtimeKey).contains(i)) {
                 checkBox.setDisable(true);
             }
-    
+
             seatGridPane.add(checkBox, colCount, rowCount);
-    
+
             int kursiNumber = i;
             checkBox.setOnAction(event -> {
                 if (!checkBox.isDisabled()) {
@@ -266,15 +335,15 @@ public class BioskopTicketApp extends Application {
                     }
                 }
             });
-    
+
             rowCount++;
             if (rowCount == 10) {
                 rowCount = 0;
                 colCount++;
             }
         }
-    
-    
+
+
 
         // Create button for booking in the center
         Button pesanButton = new Button("Pesan");
@@ -290,10 +359,10 @@ public class BioskopTicketApp extends Application {
             } else {
                 // Calculate the total amount based on the number of seats selected
                 totalAmount = calculateTotalAmount(kursiPilihanUser.size());
-        
+
                 // Show the total amount to the user before entering the payment
                 showAlert("Total Amount", "Total amount to be paid: " + totalAmount);
-        
+
                 double amountPaid = promptForAmount();
                 if (amountPaid > 0) {
                     boolean paymentSuccessful = PaymentManager.processPayment(kursiPilihanUser, amountPaid, totalAmount);
@@ -304,8 +373,8 @@ public class BioskopTicketApp extends Application {
                 }
             }
         });
-        
-        
+
+
 
         Scene seatSelectionScene = new Scene(borderPane, 900, 500); // Sesuaikan ukuran jika diperlukan
         primaryStage.setScene(seatSelectionScene);
@@ -317,26 +386,27 @@ public class BioskopTicketApp extends Application {
         return numberOfSeats * PaymentManager.SEAT_PRICE;
     }
 
-private double promptForAmount() {
-    TextInputDialog dialog = new TextInputDialog();
-    dialog.setTitle("Payment");
-    dialog.setHeaderText(null);
-    // Show the total amount in the content of the dialog
-    dialog.setContentText("Enter the amount paid (Total: " + totalAmount + "):");
+    private double promptForAmount() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Payment");
+        dialog.setHeaderText(null);
+        // Show the total amount in the content of the dialog
+        dialog.setContentText("Enter the amount paid (Total: " + totalAmount + "):");
 
-    try {
-        Optional<String> result = dialog.showAndWait();
-        return result.map(Double::parseDouble).orElse(0.0);
-    } catch (NumberFormatException e) {
-        // Handle the case where the user enters a non-numeric value
-        showAlert("Error", "Invalid input. Please enter a numeric value for the payment amount.");
-        return promptForAmount(); // Recursive call to prompt the user again
+        try {
+            Optional<String> result = dialog.showAndWait();
+            return result.map(Double::parseDouble).orElse(0.0);
+        } catch (NumberFormatException e) {
+            // Handle the case where the user enters a non-numeric value
+            showAlert("Error", "Invalid input. Please enter a numeric value for the payment amount.");
+            return promptForAmount(); // Recursive call to prompt the user again
+        }
     }
-}
-
-
-
-
+    private String formatSelectedSeats(Set<Integer> selectedSeats) {
+        return selectedSeats.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+    }
 
     private void showNotaAndRecordPurchase() {
         StringBuilder nota = new StringBuilder();
@@ -347,19 +417,18 @@ private double promptForAmount() {
         nota.append("Kursi Terpilih: ");
 
         for (int kursi : kursiPilihanUser) {
-            kursiTerpesan.add(kursi);
+            nota.append("Kursi ").append(kursi).append(" ");
         }
-        if (!kursiPilihanUser.isEmpty()) {
-            nota.delete(nota.length() - 2, nota.length());
-        }
+
 
         String movieShowtimeKey = film.getName() + "_" + jamPenayangan;
 
 
-        reservedSeatsByShowtime.computeIfAbsent(movieShowtimeKey, k -> new HashSet<>())
-        .addAll(kursiPilihanUser);
+        reservedSeatsByShowtime.computeIfAbsent(movieShowtimeKey, k -> new HashSet<>()).addAll(kursiPilihanUser);
 
         showNotaAndRecordPurchase(nota.toString());
+
+
     }
 
     private void showNotaAndRecordPurchase(String nota) {
@@ -371,6 +440,8 @@ private double promptForAmount() {
 
         Receipt receipt = new Receipt(pembeli, jamPenayangan, film.getName(), kursiPilihanUser);
         daftarPemesanan.add(receipt);
+
+        savePemesananToFile(daftarPemesanan);
 
         tableView.setItems(FXCollections.observableArrayList(daftarPemesanan));
 
@@ -394,10 +465,7 @@ private double promptForAmount() {
         }
     }
 
-    private void generateRandomSeats() {
-        kursiRandomTerisi.clear();
 
-    }
 
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -417,7 +485,7 @@ private double promptForAmount() {
         pembeliField.clear();
         jamPenayanganComboBox.getSelectionModel().clearSelection();
         filmComboBox.getSelectionModel().clearSelection();
-    
+
         for (Node node : seatGridPane.getChildren()) {
             if (node instanceof CheckBox) {
                 CheckBox checkBox = (CheckBox) node;
@@ -425,16 +493,16 @@ private double promptForAmount() {
                 checkBox.setDisable(false);
             }
         }
-    
+
         // Check if the film object is not null before using it
         if (film != null && jamPenayangan != null) {
             String movieShowtimeKey = film.getName() + "_" + jamPenayangan;
-    
+
             // Clear the reserved seats for the current showtime and movie
             reservedSeatsByShowtime.remove(movieShowtimeKey);
         }
     }
-    
+
 
     public static void setRoot(String string) {
     }
